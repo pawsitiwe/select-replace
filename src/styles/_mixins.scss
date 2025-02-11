@@ -2,16 +2,24 @@
 @use "@ryze-digital/scss-utilities";
 @use "config";
 
-@mixin fake-select($icon-color: config.get("fake-select", "icon", "color"), $size: config.get("fake-select", "icon", "size"), $padding-inline-end: config.get("fake-select", "padding-inline-end")) {
+@mixin fake-select(
+    $icon-color: config.get("fake-select", "icon", "color"),
+    $size: config.get("fake-select", "icon", "size"),
+    $padding-inline-end: config.get("fake-select", "padding-inline-end")
+) {
     $size: scss-utilities.rem-calc($size);
     $padding-inline-end: scss-utilities.rem-calc($padding-inline-end);
     cursor: pointer;
     background: {
-        image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='32' height='24' viewBox='0 0 32 24'><polygon points='0,0 32,0 16,24' style='fill:" + hsl(scss-utilities.hex2hsl($icon-color)) + "'></polygon></svg>");
+        image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='32' height='24' viewBox='0 0 32 24'><polygon points='0,0 32,0 16,24' style='fill:" + hsl(
+                scss-utilities.hex2hsl($icon-color)
+            ) + "'></polygon></svg>");
         origin: content-box;
         size: $size math.div($size, 1.5);
         repeat: no-repeat;
-        position: right ((math.div($padding-inline-end, 2) + math.div($size, 2)) * -1) center;
+        position: right
+            ((math.div($padding-inline-end, 2) + math.div($size, 2)) * -1)
+            center;
     }
     padding: {
         inline: {
