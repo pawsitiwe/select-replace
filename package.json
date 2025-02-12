@@ -13,7 +13,7 @@
     "lint:styles": "stylelint src/styles/**",
     "lint-fix": "npm-run-all --parallel lint-fix:*",
     "lint-fix:scripts": "npm run lint:scripts -- --fix",
-    "lint-fix:styles": "npm run lint:styles -- --fix && prettier src/styles/** --write",
+    "lint-fix:styles": "prettier src/styles/** --write && npm run lint:styles -- --fix",
     "test": "npm run test:scripts",
     "test:scripts": "jest",
     "test:scripts:coverage": "jest --coverage",
