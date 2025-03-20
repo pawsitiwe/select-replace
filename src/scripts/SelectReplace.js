@@ -100,6 +100,14 @@ export class SelectReplace extends Base {
         }
     }
 
+    reposition() {
+        if (this.#optionListProvider.optionListCreated === false) {
+            return;
+        }
+
+        this.#optionListProvider.updatePosition();
+    }
+
     /**
      *
      * @returns {number}

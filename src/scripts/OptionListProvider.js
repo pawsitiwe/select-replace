@@ -1,3 +1,5 @@
+import { ReduceFunctionCalls } from '@ryze-digital/js-utilities';
+
 export class OptionListProvider {
     /**
      * @type {HTMLDivElement}
@@ -118,22 +120,13 @@ export class OptionListProvider {
             });
         }
 
-        const { top, left, width } = this.#getPositions();
-
-        Object.assign(this.#optionList.style, {
-            top,
-            left,
-            display: 'block'
-        });
-
-        if (this.options.optionList.calcWidth === true) {
-            this.#optionList.style.width = width;
-        }
-
+        this.updatePosition();
+        this.#optionList.style.display = 'block';
         this.#optionList.ariaExpanded = 'true';
         this.#visible = true;
 
         document.addEventListener('click', this.#handleOutsideClick);
+        window.addEventListener('resize', this.#handleResize);
     }
 
     hide() {
@@ -142,6 +135,20 @@ export class OptionListProvider {
         this.#visible = false;
 
         document.removeEventListener('click', this.#handleOutsideClick);
+        window.removeEventListener('resize', this.#handleResize);
+    }
+
+    updatePosition() {
+        const { top, left, width } = this.#getPositions();
+
+        Object.assign(this.#optionList.style, {
+            top,
+            left
+        });
+
+        if (this.options.optionList.calcWidth === true) {
+            this.#optionList.style.width = width;
+        }
     }
 
     /**
@@ -175,4 +182,8 @@ export class OptionListProvider {
             this.hide();
         }
     };
+
+    #handleResize = ReduceFunctionCalls.throttle(() => {
+        this.updatePosition();
+    });
 }
