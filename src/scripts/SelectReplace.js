@@ -139,11 +139,7 @@ export class SelectReplace extends Base {
         this.options.el.classList.add(this.options.classes.hideSelect);
     }
 
-    /**
-     *
-     * @param {object} event
-     */
-    #handleFakeSelectClick = (event) => {
+    #handleFakeSelectClick = () => {
         if (this.#optionListProvider.visible === true) {
             this.#optionListProvider.hide();
         } else {
