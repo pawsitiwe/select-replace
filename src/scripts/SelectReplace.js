@@ -136,8 +136,6 @@ export class SelectReplace extends Base {
      * @param {object} event
      */
     #handleFakeSelectClick = (event) => {
-        event.stopPropagation();
-
         if (this.#optionListProvider.visible === true) {
             this.#optionListProvider.hide();
         } else {

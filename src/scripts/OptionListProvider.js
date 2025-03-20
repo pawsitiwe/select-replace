@@ -167,6 +167,10 @@ export class OptionListProvider {
      * @param {object} event
      */
     #handleOutsideClick = (event) => {
+        if (event.target.closest(`.${this.options.classes.fakeSelect}`) === this.#fakeSelect) {
+            return;
+        }
+
         if (event.composedPath()[0].closest(`.${this.options.classes.optionList}`) === null && this.#visible === true) {
             this.hide();
         }
