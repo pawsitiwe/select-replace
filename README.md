@@ -103,5 +103,8 @@ Checkout this repository and use the [/demos](/demos) folder as document root to
 - [Single select](/demos/single-select.html)
 - [Multiple select](/demos/multiple-select.html)
 - [Multiple select fields](/demos/multiple-select-fields.html)
+- [Preselected options](/demos/preselected-options.html)
+- [Disabled select and options](/demos/disabled-select-and-options.html)
 - [Programmatic control](/demos/programmatic-control.html)
+- [Form reset](/demos/form-reset.html)
 - [Option list appended to custom container](/demos/option-list-appended-to-custom-container.html)
