@@ -71,6 +71,8 @@ export class SelectReplace extends Base {
 
         this.#placeholderProvider.createPlaceholder();
 
+        this.bindFormReset();
+
         if (this.isDisabled) {
             return;
         }
@@ -92,7 +94,7 @@ export class SelectReplace extends Base {
         );
     }
 
-    update() {
+    update = () => {
         if (this.#optionListProvider.optionListCreated === true && this.isDisabled === false) {
             this.#optionListProvider.syncOptions();
         }
@@ -102,7 +104,7 @@ export class SelectReplace extends Base {
         } else {
             this.#placeholderProvider.placeholder = this.options.el.querySelector('option:checked').textContent;
         }
-    }
+    };
 
     reposition() {
         if (this.#optionListProvider.optionListCreated === false || this.isDisabled) {
@@ -264,4 +266,16 @@ export class SelectReplace extends Base {
             this.#placeholderProvider.refreshSelectedCount(this.selectedCount);
         }
     };
+
+    bindFormReset() {
+        const form = this.options.el.closest('form');
+
+        if (form === null) {
+            return;
+        }
+
+        form.addEventListener('reset', () => {
+            window.setTimeout(this.update, 0);
+        });
+    }
 }

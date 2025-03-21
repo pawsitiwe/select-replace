@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Form Reset Demo</title>
+    <link rel="stylesheet" href="build/demo.css">
+</head>
+<body>
+<div class="wrapper">
+    <form>
+        <div class="form-grid">
+            <div>
+                <label for="single-select">Select (Single)</label>
+                <select id="single-select">
+                    <option value="">Please select …</option>
+                    <option value="option-1">Option 1</option>
+                    <option value="option-2">Option 2</option>
+                    <option value="option-3">Option 3</option>
+                    <option value="option-4">Option 4</option>
+                    <option value="option-5">Option 5</option>
+                </select>
+            </div>
+            <div>
+                <label for="multiple-select">Select (Multiple)</label>
+                <select id="multiple-select" multiple data-placeholder="Please select …">
+                    <option value="option-1">Option 1</option>
+                    <option value="option-2">Option 2</option>
+                    <option value="option-3">Option 3</option>
+                    <option value="option-4">Option 4</option>
+                    <option value="option-5">Option 5</option>
+                </select>
+            </div>
+            <div class="button-bar">
+                <button type="reset">Reset form</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="module">
+    import { SelectReplace } from './build/demo.js';
+
+    const selectFields = document.querySelectorAll('select');
+
+    selectFields.forEach((selectField) => {
+        const selectReplace = new SelectReplace({
+            el: selectField
+        });
+
+        selectReplace.init();
+    });
+</script>
+
+</body>
+</html>
