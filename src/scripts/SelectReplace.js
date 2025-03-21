@@ -25,7 +25,6 @@ export class SelectReplace extends Base {
     #observer;
 
     /**
-     *
      * @param {object} options
      * @param {HTMLSelectElement} [options.el]
      */
@@ -41,7 +40,8 @@ export class SelectReplace extends Base {
                 placeholder: 'placeholder',
                 optionList: 'option-list',
                 hideSelect: 'visually-hidden',
-                focussed: 'has-focus'
+                focussed: 'has-focus',
+                disabled: 'disabled'
             },
             i18n: {
                 languages: ['en', 'de'],
@@ -63,6 +63,18 @@ export class SelectReplace extends Base {
     init() {
         this.#replaceSelect();
 
+        this.#placeholderProvider = new PlaceholderProvider(
+            this.options,
+            this.#fakeSelect,
+            this.selectedCount
+        );
+
+        this.#placeholderProvider.createPlaceholder();
+
+        if (this.isDisabled) {
+            return;
+        }
+
         this.#observer = new MutationObserver(this.#handleDomChanges);
 
         this.#optionListProvider = new OptionListProvider(
@@ -71,14 +83,6 @@ export class SelectReplace extends Base {
             this.#handleOptionListClick,
             this.#observer
         );
-
-        this.#placeholderProvider = new PlaceholderProvider(
-            this.options,
-            this.#fakeSelect,
-            this.selectedCount
-        );
-
-        this.#placeholderProvider.createPlaceholder();
 
         new KeyboardController(
             this.options,
@@ -89,7 +93,7 @@ export class SelectReplace extends Base {
     }
 
     update() {
-        if (this.#optionListProvider.optionListCreated === true) {
+        if (this.#optionListProvider.optionListCreated === true && this.isDisabled === false) {
             this.#optionListProvider.syncOptions();
         }
 
@@ -101,7 +105,7 @@ export class SelectReplace extends Base {
     }
 
     reposition() {
-        if (this.#optionListProvider.optionListCreated === false) {
+        if (this.#optionListProvider.optionListCreated === false || this.isDisabled) {
             return;
         }
 
@@ -109,7 +113,6 @@ export class SelectReplace extends Base {
     }
 
     /**
-     *
      * @returns {number}
      */
     get selectedCount() {
@@ -117,11 +120,17 @@ export class SelectReplace extends Base {
     }
 
     /**
-     *
      * @returns {boolean}
      */
     get isMultiple() {
         return this.options.el.multiple;
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    get isDisabled() {
+        return this.options.el.disabled;
     }
 
     #setLanguageToUse() {
@@ -133,7 +142,12 @@ export class SelectReplace extends Base {
     #replaceSelect() {
         this.#fakeSelect = document.createElement('div');
         this.#fakeSelect.classList.add(this.options.classes.fakeSelect);
-        this.#fakeSelect.addEventListener('click', this.#handleFakeSelectClick);
+
+        if (this.isDisabled) {
+            this.#fakeSelect.classList.add(this.options.classes.disabled);
+        } else {
+            this.#fakeSelect.addEventListener('click', this.#handleFakeSelectClick);
+        }
 
         this.options.el.after(this.#fakeSelect);
         this.options.el.classList.add(this.options.classes.hideSelect);
