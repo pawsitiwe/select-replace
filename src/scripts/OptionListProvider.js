@@ -32,7 +32,6 @@ export class OptionListProvider {
     #observer;
 
     /**
-     *
      * @param {object} options
      * @param {HTMLDivElement} fakeSelect
      * @param {Function} clickCallback
@@ -46,7 +45,6 @@ export class OptionListProvider {
     }
 
     /**
-     *
      * @returns {boolean}
      */
     get optionListCreated() {
@@ -54,7 +52,6 @@ export class OptionListProvider {
     }
 
     /**
-     *
      * @returns {HTMLDivElement}
      */
     get optionList() {
@@ -62,7 +59,6 @@ export class OptionListProvider {
     }
 
     /**
-     *
      * @returns {boolean}
      */
     get visible() {
@@ -104,6 +100,10 @@ export class OptionListProvider {
             });
 
             optionEl.dataset.value = option.value;
+
+            if (option.disabled) {
+                optionEl.classList.add(this.options.classes.disabled);
+            }
 
             this.#optionList.append(optionEl);
         });
@@ -152,7 +152,6 @@ export class OptionListProvider {
     }
 
     /**
-     *
      * @returns {object}
      */
     #getPositions() {
@@ -170,7 +169,6 @@ export class OptionListProvider {
     }
 
     /**
-     *
      * @param {object} event
      */
     #handleOutsideClick = (event) => {

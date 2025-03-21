@@ -168,7 +168,7 @@ export class SelectReplace extends Base {
     #handleOptionListClick = (event) => {
         const clickedOption = event.target.closest('[data-value]');
 
-        if (clickedOption === null) {
+        if (clickedOption === null || clickedOption.classList.contains(this.options.classes.disabled)) {
             return;
         }
 

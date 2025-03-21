@@ -112,6 +112,10 @@ select {
             weight: bold;
         }
     }
+    .disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 }
 
 #custom-container {
