@@ -96,6 +96,36 @@ new SelectReplace({...}).init();
 
 </details>
 
+#### Public methods
+
+The folloing methods can be called on an instance of `SelectReplace`:
+
+
+<details>
+<summary>init()</summary>
+
+Calling the constructor just creates a new instance of `SelectReplace` and does not replace the `<select>` field. You
+need to call `init()` to initiate the needed DOM modifications. This method does not have any parameters yet.
+
+</details>
+
+<details>
+<summary>update()</summary>
+
+After doing some modifications to the `<select>` field, you have to call `update()` to reflect these changes to the fake
+select. This method does not have any parameters yet.
+
+</details>
+
+<details>
+<summary>reposition()</summary>
+
+You can manually call `reposition()` to recalculate and update the positions of the fake dropdown list. This method does
+not have any parameters yet.
+
+</details>
+
+
 ## Demos
 
 Checkout this repository and use the [/demos](/demos) folder as document root to see a running demo in the browser.
