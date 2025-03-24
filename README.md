@@ -5,7 +5,7 @@
 ## Install
 
 ```sh
-npm i @ryze-digital/select-replace
+npm i @ryze-digital/select-replace --save
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ Use the provided `configure` mixin to define your select replace defaults.
 ```
 
 <details>
-<summary>List of available configure options</summary>
+<summary>List of available configuration options</summary>
 
 | Option                         | Type   | Default   | Description                                                            |
 |--------------------------------|--------|-----------|------------------------------------------------------------------------|
@@ -53,7 +53,7 @@ For accessibility reasons we do not simply hide the original `<select>` field, b
 Therefore, our JavaScript adds a class called `visually-hidden` to it after it is initialized. To visually hide elements
 that should still be usable by screen readers, we have a mixin in our
 [scss-utilities](https://github.com/ryze-digital/scss-utilities) called [visually-hidden](https://github.com/ryze-digital/scss-utilities/blob/main/src/_accessibility.scss#L10).
-You could either use it to create a utility class with it ...
+You could either use it to create a utility class with it, to separately hide only selected `<select>` fields ...
 
 ```Scss
 .visually-hidden {
@@ -61,7 +61,7 @@ You could either use it to create a utility class with it ...
 }
 ```
 
-... or you can use it to only hide `<select>` fields, if you don't like global classes.
+... or you can use it to only hide all `<select>` field directly, if you plan to replace them all.
 
 ```Scss
 select {
@@ -80,11 +80,11 @@ new SelectReplace({...}).init();
 ```
 
 <details>
-<summary>List of available parameters for SelectReplace class</summary>
+<summary>List of available constructor parameters</summary>
 
 | Option               | Type        | Default                                                                                                                                                                                                                                | Description                                                                         |
 |----------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| el                   | HTMLElement | `document.querySelector('selector')`                                                                                                                                                                                                   | Container to which the library should be bound                                      |
+| el                   | HTMLElement | `document.querySelector('select')`                                                                                                                                                                                                     | Container to which the library should be bound                                      |
 | optionList           | object      |                                                                                                                                                                                                                                        | Configuration options especially for the option list                                |
 | optionList.calcWidth | boolean     | `true`                                                                                                                                                                                                                                 | Make option list the same width as select field                                     |
 | optionList.appendTo  | HTMLElement | `document.body`                                                                                                                                                                                                                        | Container in which the option list get appended                                     |
