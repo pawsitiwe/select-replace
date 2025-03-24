@@ -96,6 +96,10 @@ select.visually-hidden {
   outline-color: lightcoral;
   outline-offset: 2px;
 }
+.select-replace.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .option-list {
   display: none;
@@ -121,6 +125,10 @@ select.visually-hidden {
 .option-list [aria-selected=true] {
   font-weight: bold;
 }
+.option-list .disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 #custom-container {
   position: relative;
@@ -133,6 +141,7 @@ select.visually-hidden {
 }
 
 .button-bar {
+  grid-column: span 2;
   display: flex;
   justify-content: center;
   gap: 0.5rem;
