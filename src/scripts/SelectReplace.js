@@ -95,6 +95,12 @@ export class SelectReplace extends Base {
     }
 
     update = () => {
+        if (this.isDisabled) {
+            this.#fakeSelect.classList.add(this.options.classes.disabled);
+        } else {
+            this.#fakeSelect.classList.remove(this.options.classes.disabled);
+        }
+
         if (this.#optionListProvider.optionListCreated === true && this.isDisabled === false) {
             this.#optionListProvider.syncOptions();
         }
