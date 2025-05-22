@@ -150,11 +150,10 @@ export class SelectReplace extends Base {
     #replaceSelect() {
         this.#fakeSelect = document.createElement('div');
         this.#fakeSelect.classList.add(this.options.classes.fakeSelect);
+        this.#fakeSelect.addEventListener('click', this.#handleFakeSelectClick);
 
         if (this.isDisabled) {
             this.#fakeSelect.classList.add(this.options.classes.disabled);
-        } else {
-            this.#fakeSelect.addEventListener('click', this.#handleFakeSelectClick);
         }
 
         this.options.el.after(this.#fakeSelect);
@@ -162,6 +161,10 @@ export class SelectReplace extends Base {
     }
 
     #handleFakeSelectClick = () => {
+        if (this.isDisabled) {
+            return;
+        }
+
         if (this.#optionListProvider.visible === true) {
             this.#optionListProvider.hide();
         } else {
