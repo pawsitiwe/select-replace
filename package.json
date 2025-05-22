@@ -2,7 +2,7 @@
   "name": "@ryze-digital/select-replace",
   "description": "",
   "license": "MIT",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": " RYZE Digital GmbH <kontakt@ryze-digital.de> (https://www.ryze-digital.de/)",
   "main": "index.js",
   "type": "module",
