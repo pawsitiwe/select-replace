@@ -173,6 +173,9 @@ export class OptionListProvider {
         this.applyFilter(this.#searchInput?.value ?? '');
     }
 
+    /**
+     * @param {boolean} [focusSearch]
+     */
     show(focusSearch = false) {
         if (this.optionListCreated === false) {
             this.createOptionList();
@@ -191,10 +194,82 @@ export class OptionListProvider {
 
         document.addEventListener('click', this.#handleOutsideClick);
         window.addEventListener('resize', this.#handleResize);
+        this.ensureActiveOptionVisible('start');
 
         if (focusSearch === true && this.#searchInput !== null) {
             this.#searchInput.focus();
         }
+    }
+
+    /**
+     * @param {'nearest'|'start'} [alignment]
+     */
+    ensureActiveOptionVisible(alignment = 'nearest') {
+        if (this.#optionListCreated === false) {
+            return;
+        }
+
+        const activeOption = this.#getSelectedVisibleOption() ?? this.#getFirstVisibleOption();
+
+        if (activeOption === null) {
+            return;
+        }
+
+        this.#scrollOptionIntoView(activeOption, alignment);
+    }
+
+    /**
+     * @param {number} direction
+     * @returns {boolean}
+     */
+    moveSelectionByVisibleOption(direction) {
+        if (this.options.el.multiple || (direction !== 1 && direction !== -1)) {
+            return false;
+        }
+
+        const visibleOptions = this.#getVisibleEnabledOptionElements();
+
+        if (visibleOptions.length === 0) {
+            return false;
+        }
+
+        const selectedOption = this.#getSelectedVisibleOption();
+
+        if (selectedOption === null) {
+            return this.#setSelectedOptionByElement(direction > 0 ? visibleOptions[0] : visibleOptions[visibleOptions.length - 1]);
+        }
+
+        const currentVisibleIndex = visibleOptions.indexOf(selectedOption);
+
+        if (currentVisibleIndex === -1) {
+            return this.#setSelectedOptionByElement(direction > 0 ? visibleOptions[0] : visibleOptions[visibleOptions.length - 1]);
+        }
+
+        const targetIndex = currentVisibleIndex + direction;
+
+        if (targetIndex < 0 || targetIndex >= visibleOptions.length) {
+            return false;
+        }
+
+        return this.#setSelectedOptionByElement(visibleOptions[targetIndex]);
+    }
+
+    /**
+     * @param {'start'|'end'} boundary
+     * @returns {boolean}
+     */
+    selectVisibleBoundaryOption(boundary) {
+        if (this.options.el.multiple) {
+            return false;
+        }
+
+        const visibleOptions = this.#getVisibleEnabledOptionElements();
+
+        if (visibleOptions.length === 0) {
+            return false;
+        }
+
+        return this.#setSelectedOptionByElement(boundary === 'start' ? visibleOptions[0] : visibleOptions[visibleOptions.length - 1]);
     }
 
     hide() {
@@ -219,6 +294,9 @@ export class OptionListProvider {
         }
     }
 
+    /**
+     * @param {string} [searchTerm]
+     */
     applyFilter(searchTerm = '') {
         const normalizedSearchTerm = searchTerm.trim().toLowerCase();
         let visibleOptionCount = 0;
@@ -240,6 +318,10 @@ export class OptionListProvider {
             this.#noResults.hidden = !noResultsVisible;
             this.#noResults.ariaHidden = noResultsVisible ? 'false' : 'true';
         }
+
+        if (this.#visible) {
+            this.ensureActiveOptionVisible();
+        }
     }
 
     resetFilter() {
@@ -250,6 +332,11 @@ export class OptionListProvider {
         this.applyFilter();
     }
 
+    /**
+     * @param {string} searchOptionKey
+     * @param {string} fallbackValue
+     * @returns {string}
+     */
     #getLocalizedSearchText(searchOptionKey, fallbackValue) {
         const textConfig = this.options.search[searchOptionKey];
 
@@ -273,6 +360,88 @@ export class OptionListProvider {
     #handleSearchInput = () => {
         this.applyFilter(this.#searchInput.value);
     };
+
+    /**
+     * @returns {HTMLDivElement|null}
+     */
+    #getSelectedVisibleOption() {
+        return this.#optionList.querySelector('[role="option"][aria-selected="true"]:not([hidden])');
+    }
+
+    /**
+     * @returns {HTMLDivElement|null}
+     */
+    #getFirstVisibleOption() {
+        return this.#optionList.querySelector('[role="option"]:not([hidden])');
+    }
+
+    /**
+     * @param {HTMLDivElement} optionEl
+     * @param {'nearest'|'start'} alignment
+     */
+    #scrollOptionIntoView(optionEl, alignment) {
+        const optionListRect = this.#optionListContainer.getBoundingClientRect();
+        const optionRect = optionEl.getBoundingClientRect();
+        const stickySearchOffset = this.#getStickySearchOffset();
+        const visibleTop = optionListRect.top + stickySearchOffset;
+        const visibleBottom = optionListRect.bottom;
+
+        if (alignment === 'start') {
+            this.#optionListContainer.scrollTop += optionRect.top - visibleTop;
+
+            return;
+        }
+
+        if (optionRect.top < visibleTop) {
+            this.#optionListContainer.scrollTop += optionRect.top - visibleTop;
+
+            return;
+        }
+
+        if (optionRect.bottom > visibleBottom) {
+            this.#optionListContainer.scrollTop += optionRect.bottom - visibleBottom;
+        }
+    }
+
+    /**
+     * @returns {number}
+     */
+    #getStickySearchOffset() {
+        if (this.#searchInput === null || this.#searchInput.hidden) {
+            return 0;
+        }
+
+        const searchRect = this.#searchInput.getBoundingClientRect();
+
+        return Math.max(searchRect.height, 0);
+    }
+
+    /**
+     * @returns {HTMLDivElement[]}
+     */
+    #getVisibleEnabledOptionElements() {
+        return Array.from(this.#optionList.querySelectorAll('[role="option"]:not([hidden])')).filter((optionEl) => {
+            return optionEl.classList.contains(this.options.classes.disabled) === false;
+        });
+    }
+
+    /**
+     * @param {HTMLDivElement} optionEl
+     * @returns {boolean}
+     */
+    #setSelectedOptionByElement(optionEl) {
+        const optionIndex = Number(optionEl.dataset.index);
+        const realOption = this.options.el.querySelectorAll('option')[optionIndex];
+
+        if (Number.isNaN(optionIndex) || typeof realOption === 'undefined' || realOption.disabled) {
+            return false;
+        }
+
+        this.options.el.selectedIndex = optionIndex;
+        this.options.el.dispatchEvent(new Event('change'));
+
+        return true;
+    }
 
     /**
      * @returns {object}

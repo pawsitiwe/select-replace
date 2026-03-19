@@ -273,6 +273,8 @@ export class SelectReplace extends Base {
         } else {
             this.#placeholderProvider.placeholder = realOptions[0].textContent;
         }
+
+        this.#optionListProvider.ensureActiveOptionVisible();
     };
 
     /**
