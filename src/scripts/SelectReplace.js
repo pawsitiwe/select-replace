@@ -1,3 +1,4 @@
+import deepmerge from 'deepmerge';
 import { Base } from '@ryze-digital/js-utilities';
 import { OptionListProvider } from './OptionListProvider.js';
 import { PlaceholderProvider } from './PlaceholderProvider.js';
@@ -25,12 +26,38 @@ export class SelectReplace extends Base {
     #observer;
 
     /**
-     * @param {object} options
-     * @param {HTMLSelectElement} [options.el]
+     * @param {HTMLSelectElement} [el]
+     * @param {object} [options]
      */
-    constructor(options = {}) {
-        super({
-            el: document.querySelector('select'),
+    constructor(
+        el = document.querySelector('select'),
+        options = {}
+    ) {
+        super({}, {});
+        this._options = this._mergeOptions(el, options);
+
+        if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {
+            console.error(`Select with id="${this.options.el.id}" is missing data-placeholder`);
+        }
+
+        this.#setLanguageToUse();
+    }
+
+    /**
+     * @returns {object}
+     */
+    get options() {
+        return this._options;
+    }
+
+    /**
+     * @param {HTMLSelectElement} el
+     * @param {object} options
+     * @returns {object}
+     */
+    _mergeOptions(el, options) {
+        return deepmerge({
+            el,
             optionList: {
                 calcWidth: true,
                 appendTo: document.body
@@ -51,13 +78,9 @@ export class SelectReplace extends Base {
                 },
                 use: 'en'
             }
-        }, options);
-
-        if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {
-            console.error(`Select with id="${this.options.el.id}" is missing data-placeholder`);
-        }
-
-        this.#setLanguageToUse();
+        }, options, {
+            isMergeableObject: (value) => Object.prototype.toString.call(value) === '[object Object]'
+        });
     }
 
     init() {

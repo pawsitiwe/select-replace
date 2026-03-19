@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "@ryze-digital/js-utilities": "^1.0.0",
-    "@ryze-digital/scss-utilities": "^1.0.0"
+    "@ryze-digital/scss-utilities": "^1.0.0",
+    "deepmerge": "^4.3.1"
   },
   "peerDependencies": {
     "@ryze-digital/js-utilities": "^1.0.0",

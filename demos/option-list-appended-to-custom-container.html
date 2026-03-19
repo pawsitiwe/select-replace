@@ -20,7 +20,7 @@
 <script type="module">
     import { SelectReplace } from './build/demo.js';
 
-    const selectReplace = new SelectReplace({
+    const selectReplace = new SelectReplace(document.querySelector('select'), {
         optionList: {
             appendTo: document.getElementById('custom-container')
         }

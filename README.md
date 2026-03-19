@@ -76,7 +76,20 @@ import { SelectReplace } from '@ryze-digital/select-replace';
 ```
 
 ```js
-new SelectReplace({...}).init();
+new SelectReplace(document.querySelector('select')).init();
+```
+
+Constructor options are deep merged. This means you can override single nested keys without redeclaring the whole object.
+
+```js
+new SelectReplace(document.querySelector('select'), {
+    classes: {
+        disabled: 'is-disabled'
+    },
+    optionList: {
+        appendTo: document.querySelector('#custom-container')
+    }
+}).init();
 ```
 
 <details>
