@@ -124,6 +124,21 @@ select.visually-hidden {
   margin-block-start: 0.5rem;
   padding: 0.2em;
 }
+.option-list .option-list-search {
+  width: 100%;
+  border-width: 1px;
+  border-style: solid;
+  border-color: lightgray;
+  border-radius: 0.5rem;
+  margin-block-end: 0.4rem;
+  padding-inline: 0.6rem;
+  padding-block: 0.3rem;
+}
+.option-list .option-list-empty {
+  color: #666666;
+  padding-inline: 0.8em;
+  padding-block: 0.5em;
+}
 .option-list [role=option] {
   cursor: pointer;
   padding-inline: 0.8em;

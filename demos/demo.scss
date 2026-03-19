@@ -95,6 +95,31 @@ select {
         }
     }
     padding: 0.2em;
+    .option-list-search {
+        width: 100%;
+        border: {
+            width: 1px;
+            style: solid;
+            color: lightgray;
+            radius: 0.5rem;
+        }
+        margin: {
+            block: {
+                end: 0.4rem;
+            }
+        }
+        padding: {
+            inline: 0.6rem;
+            block: 0.3rem;
+        }
+    }
+    .option-list-empty {
+        color: #666666;
+        padding: {
+            inline: 0.8em;
+            block: 0.5em;
+        }
+    }
     [role='option'] {
         cursor: pointer;
         padding: {
