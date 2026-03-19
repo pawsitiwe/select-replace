@@ -79,7 +79,9 @@ export class SelectReplace extends Base {
                 use: 'en'
             }
         }, options, {
-            isMergeableObject: (value) => Object.prototype.toString.call(value) === '[object Object]'
+            isMergeableObject: (value) => {
+                return Object.prototype.toString.call(value) === '[object Object]';
+            }
         });
     }
 
