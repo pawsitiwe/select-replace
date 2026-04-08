@@ -160,7 +160,7 @@ export class SearchProvider {
      * @returns {string}
      */
     #getLocalizedText(key, fallbackValue) {
-        const textConfig = this.options.search[key];
+        const textConfig = this.options.i18n.search[key];
 
         if (typeof textConfig === 'string') {
             return textConfig;

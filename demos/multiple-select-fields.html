@@ -50,7 +50,9 @@
     const selectFields = document.querySelectorAll('select');
 
     selectFields.forEach((selectField) => {
-        const selectReplace = new SelectReplace(selectField);
+        const selectReplace = new SelectReplace({
+            el: selectField
+        });
 
         selectReplace.init();
     });

@@ -1,4 +1,3 @@
-import deepmerge from 'deepmerge';
 import { Base } from '@ryze-digital/js-utilities';
 import { OptionListProvider } from './OptionListProvider.js';
 import { PlaceholderProvider } from './PlaceholderProvider.js';
@@ -26,38 +25,12 @@ export class SelectReplace extends Base {
     #observer;
 
     /**
-     * @param {HTMLSelectElement} [el]
-     * @param {object} [options]
-     */
-    constructor(
-        el = document.querySelector('select'),
-        options = {}
-    ) {
-        super({}, {});
-        this._options = this._mergeOptions(el, options);
-
-        if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {
-            console.error(`Select with id="${this.options.el.id}" is missing data-placeholder`);
-        }
-
-        this.#setLanguageToUse();
-    }
-
-    /**
-     * @returns {object}
-     */
-    get options() {
-        return this._options;
-    }
-
-    /**
-     * @param {HTMLSelectElement} el
      * @param {object} options
-     * @returns {object}
+     * @param {HTMLSelectElement} [options.el]
      */
-    _mergeOptions(el, options) {
-        return deepmerge({
-            el,
+    constructor(options = {}) {
+        super({
+            el: document.querySelector('select'),
             optionList: {
                 calcWidth: true,
                 appendTo: document.body
@@ -73,30 +46,34 @@ export class SelectReplace extends Base {
                 focussed: 'has-focus',
                 disabled: 'disabled'
             },
-            search: {
-                enabled: false,
-                placeholder: {
-                    en: 'Search options',
-                    de: 'Optionen suchen'
-                },
-                noResults: {
-                    en: 'No results found',
-                    de: 'Keine Ergebnisse gefunden'
-                }
-            },
             i18n: {
                 languages: ['en', 'de'],
                 selectedOptions: {
                     en: 'selected',
                     de: 'ausgewählt'
                 },
+                search: {
+                    placeholder: {
+                        en: 'Search options',
+                        de: 'Optionen suchen'
+                    },
+                    noResults: {
+                        en: 'No results found',
+                        de: 'Keine Ergebnisse gefunden'
+                    }
+                },
                 use: 'en'
+            },
+            search: {
+                enabled: false,
             }
-        }, options, {
-            isMergeableObject: (value) => {
-                return Object.prototype.toString.call(value) === '[object Object]';
-            }
-        });
+        }, options);
+
+        if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {
+            console.error(`Select with id="${this.options.el.id}" is missing data-placeholder`);
+        }
+
+        this.#setLanguageToUse();
     }
 
     init() {
