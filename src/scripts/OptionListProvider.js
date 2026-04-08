@@ -108,32 +108,89 @@ export class OptionListProvider {
 
     syncOptions() {
         this.#optionList.innerHTML = '';
+        let optionIndex = 0;
 
-        this.options.el.querySelectorAll('option').forEach((option, optionIndex) => {
-            const optionEl = document.createElement('div');
-            let ariaSelected = 'false';
+        Array.from(this.options.el.children).forEach((child) => {
+            if (child.tagName === 'OPTGROUP') {
+                this.#createOptGroupElement(child, optionIndex);
 
-            if (option.selected) {
-                ariaSelected = 'true';
+                optionIndex += child.querySelectorAll('option').length;
+            } else if (child.tagName === 'OPTION') {
+                const optionEl = this.#createOptionElement(child, optionIndex);
+
+                this.#optionList.append(optionEl);
+
+                optionIndex++;
             }
-
-            Object.assign(optionEl, {
-                textContent: option.text
-            });
-            optionEl.setAttribute('role', 'option');
-            optionEl.setAttribute('aria-selected', ariaSelected);
-
-            optionEl.dataset.value = option.value;
-            optionEl.dataset.index = String(optionIndex);
-
-            if (option.disabled) {
-                optionEl.classList.add(this.options.classes.disabled);
-            }
-
-            this.#optionList.append(optionEl);
         });
 
         this.#applyFilter();
+    }
+
+    /**
+     * @param {HTMLOptGroupElement} optgroup
+     * @param {number} startIndex
+     */
+    #createOptGroupElement(optgroup, startIndex) {
+        const optgroupEl = document.createElement('div');
+
+        optgroupEl.classList.add(this.options.classes.optgroup);
+        optgroupEl.setAttribute('role', 'group');
+        optgroupEl.setAttribute('aria-label', optgroup.label);
+
+        const labelEl = document.createElement('div');
+
+        labelEl.classList.add('label');
+        labelEl.textContent = optgroup.label;
+        labelEl.dataset.optgroupLabel = 'true';
+
+        if (optgroup.disabled) {
+            optgroupEl.classList.add(this.options.classes.disabled);
+            labelEl.classList.add(this.options.classes.disabled);
+        }
+
+        optgroupEl.append(labelEl);
+
+        let currentIndex = startIndex;
+
+        optgroup.querySelectorAll('option').forEach((option) => {
+            const optionEl = this.#createOptionElement(option, currentIndex, optgroup.disabled);
+
+            optgroupEl.append(optionEl);
+            currentIndex++;
+        });
+
+        this.#optionList.append(optgroupEl);
+    }
+
+    /**
+     * @param {HTMLOptionElement} option
+     * @param {number} optionIndex
+     * @param {boolean} [parentDisabled]
+     * @returns {HTMLDivElement}
+     */
+    #createOptionElement(option, optionIndex, parentDisabled = false) {
+        const optionEl = document.createElement('div');
+        let ariaSelected = 'false';
+
+        if (option.selected) {
+            ariaSelected = 'true';
+        }
+
+        Object.assign(optionEl, {
+            textContent: option.text
+        });
+        optionEl.setAttribute('role', 'option');
+        optionEl.setAttribute('aria-selected', ariaSelected);
+
+        optionEl.dataset.value = option.value;
+        optionEl.dataset.index = String(optionIndex);
+
+        if (option.disabled || parentDisabled) {
+            optionEl.classList.add(this.options.classes.disabled);
+        }
+
+        return optionEl;
     }
 
     /**

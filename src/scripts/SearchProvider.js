@@ -100,7 +100,7 @@ export class SearchProvider {
         const searchTerm = this.searchTerm;
         let visibleOptionCount = 0;
 
-        optionList.querySelectorAll('[role="option"]').forEach((optionEl) => {
+        optionList.querySelectorAll(':scope > [role="option"]').forEach((optionEl) => {
             const optionMatchesSearchTerm = optionEl.textContent.toLowerCase().includes(searchTerm);
 
             optionEl.hidden = !optionMatchesSearchTerm;
@@ -109,6 +109,26 @@ export class SearchProvider {
             if (optionMatchesSearchTerm) {
                 visibleOptionCount += 1;
             }
+        });
+
+        optionList.querySelectorAll('[role="group"]').forEach((optgroupEl) => {
+            let groupVisibleCount = 0;
+
+            optgroupEl.querySelectorAll('[role="option"]').forEach((optionEl) => {
+                const optionMatchesSearchTerm = optionEl.textContent.toLowerCase().includes(searchTerm);
+
+                optionEl.hidden = !optionMatchesSearchTerm;
+                optionEl.ariaHidden = optionMatchesSearchTerm ? 'false' : 'true';
+
+                if (optionMatchesSearchTerm) {
+                    groupVisibleCount += 1;
+                    visibleOptionCount += 1;
+                }
+            });
+
+            // Hide optgroup if no options are visible
+            optgroupEl.hidden = groupVisibleCount === 0;
+            optgroupEl.ariaHidden = groupVisibleCount === 0 ? 'true' : 'false';
         });
 
         this.#updateNoResultsVisibility(visibleOptionCount === 0);

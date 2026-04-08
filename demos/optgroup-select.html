@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Select Replace - OptGroup Demo</title>
+    <link rel="stylesheet" href="build/demo.css">
+</head>
+<body>
+<div class="wrapper">
+    <form>
+        <div>
+            <label for="select-with-optgroup">Select with OptGroups</label>
+            <select id="select-with-optgroup">
+                <option value="">Please select …</option>
+                <optgroup label="Fruits">
+                    <option value="apple">Apple</option>
+                    <option value="banana">Banana</option>
+                </optgroup>
+                <optgroup label="Vegetables" disabled>
+                    <option value="carrot">Carrot</option>
+                    <option value="broccoli">Broccoli</option>
+                </optgroup>
+                <optgroup label="Grains">
+                    <option value="rice">Rice</option>
+                    <option value="wheat" disabled>Wheat (Disabled)</option>
+                </optgroup>
+            </select>
+        </div>
+    </form>
+</div>
+<script type="module">
+    import { SelectReplace } from './build/demo.js';
+
+    const selectReplace = new SelectReplace();
+
+    selectReplace.init();
+</script>
+
+</body>
+</html>
+

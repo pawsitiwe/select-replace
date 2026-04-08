@@ -120,10 +120,39 @@ select {
         }
     }
     .option-list-empty {
-        color: #666666;
+        color: lightgray;
         padding: {
             inline: 0.8em;
             block: 0.5em;
+        }
+    }
+    .option-list-group {
+        &:not(:first-child) {
+            margin: {
+                block: {
+                    start: 0.5em;
+                }
+            }
+        }
+        .label {
+            font: {
+                weight: bold;
+                size: 0.85em;
+            }
+            color: lightgray;
+            text: {
+                transform: uppercase;
+            }
+            padding: {
+                inline: 0.8em;
+                block: 0.4em 0.2em;
+            }
+            cursor: default;
+        }
+        &.disabled {
+            .option-list-group-label {
+                opacity: 0.5;
+            }
         }
     }
     [role='option'] {

@@ -66,6 +66,7 @@ export class SelectReplace extends Base {
                 fakeSelect: 'select-replace',
                 placeholder: 'placeholder',
                 optionList: 'option-list',
+                optgroup: 'option-list-group',
                 searchInput: 'option-list-search',
                 noResults: 'option-list-empty',
                 hideSelect: 'visually-hidden',

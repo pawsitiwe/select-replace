@@ -143,6 +143,21 @@ select.visually-hidden {
   padding-inline: 0.8em;
   padding-block: 0.5em;
 }
+.option-list .option-list-group:not(:first-child) {
+  margin-block-start: 0.5em;
+}
+.option-list .option-list-group-label {
+  font-weight: bold;
+  font-size: 0.85em;
+  color: #666666;
+  text-transform: uppercase;
+  padding-inline: 0.8em;
+  padding-block: 0.4em 0.2em;
+  cursor: default;
+}
+.option-list .option-list-group.disabled .option-list-group-label {
+  opacity: 0.5;
+}
 .option-list [role=option] {
   cursor: pointer;
   padding-inline: 0.8em;
