@@ -1,4 +1,5 @@
 import { ReduceFunctionCalls } from '@ryze-digital/js-utilities';
+import { SearchProvider } from './SearchProvider.js';
 
 export class OptionListProvider {
     /**
@@ -17,14 +18,9 @@ export class OptionListProvider {
     #optionListContainer = null;
 
     /**
-     * @type {HTMLInputElement}
+     * @type {SearchProvider}
      */
-    #searchInput = null;
-
-    /**
-     * @type {HTMLDivElement}
-     */
-    #noResults = null;
+    #searchProvider;
 
     /**
      * @type {boolean}
@@ -57,6 +53,7 @@ export class OptionListProvider {
         this.#fakeSelect = fakeSelect;
         this.#clickCallback = clickCallback;
         this.#observer = observer;
+        this.#searchProvider = new SearchProvider(options, this.#handleSearchInput);
     }
 
     /**
@@ -77,7 +74,7 @@ export class OptionListProvider {
      * @returns {HTMLInputElement|null}
      */
     get searchInput() {
-        return this.#searchInput;
+        return this.#searchProvider.searchInput;
     }
 
     /**
@@ -99,48 +96,14 @@ export class OptionListProvider {
 
         this.#optionList.setAttribute('role', 'listbox');
 
-        if (this.options.search.enabled === true) {
-            this.#createSearchInput();
-        }
-
-        this.#createNoResultsElement();
-
         this.#optionListContainer.append(this.#optionList);
-        this.#optionListContainer.append(this.#noResults);
+        this.#searchProvider.createSearchElements(this.#optionListContainer);
 
         this.#optionListContainer.addEventListener('click', this.#clickCallback);
         this.#optionListContainer.dataset.id = this.options.el.id;
         this.#optionListCreated = true;
 
         this.options.optionList.appendTo.append(this.#optionListContainer);
-    }
-
-    #createSearchInput() {
-        this.#searchInput = document.createElement('input');
-
-        Object.assign(this.#searchInput, {
-            type: 'search',
-            placeholder: this.#getLocalizedSearchText('placeholder', 'Search options'),
-            ariaLabel: this.#getLocalizedSearchText('placeholder', 'Search options')
-        });
-        this.#searchInput.classList.add(this.options.classes.searchInput);
-
-        this.#searchInput.autocomplete = 'off';
-        this.#searchInput.spellcheck = false;
-        this.#searchInput.addEventListener('input', this.#handleSearchInput);
-
-        this.#optionListContainer.append(this.#searchInput);
-    }
-
-    #createNoResultsElement() {
-        this.#noResults = document.createElement('div');
-
-        Object.assign(this.#noResults, {
-            textContent: this.#getLocalizedSearchText('noResults', 'No results found'),
-            hidden: true,
-            ariaHidden: 'true'
-        });
-        this.#noResults.classList.add(this.options.classes.noResults);
     }
 
     syncOptions() {
@@ -170,7 +133,7 @@ export class OptionListProvider {
             this.#optionList.append(optionEl);
         });
 
-        this.applyFilter(this.#searchInput?.value ?? '');
+        this.#applyFilter();
     }
 
     /**
@@ -196,8 +159,8 @@ export class OptionListProvider {
         window.addEventListener('resize', this.#handleResize);
         this.ensureActiveOptionVisible('start');
 
-        if (focusSearch === true && this.#searchInput !== null) {
-            this.#searchInput.focus();
+        if (focusSearch === true && this.#searchProvider.searchInput !== null) {
+            this.#searchProvider.searchInput.focus();
         }
     }
 
@@ -294,30 +257,8 @@ export class OptionListProvider {
         }
     }
 
-    /**
-     * @param {string} [searchTerm]
-     */
-    applyFilter(searchTerm = '') {
-        const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-        let visibleOptionCount = 0;
-
-        this.#optionList.querySelectorAll('[role="option"]').forEach((optionEl) => {
-            const optionMatchesSearchTerm = optionEl.textContent.toLowerCase().includes(normalizedSearchTerm);
-
-            optionEl.hidden = !optionMatchesSearchTerm;
-            optionEl.ariaHidden = optionMatchesSearchTerm ? 'false' : 'true';
-
-            if (optionMatchesSearchTerm) {
-                visibleOptionCount += 1;
-            }
-        });
-
-        if (this.#noResults !== null) {
-            const noResultsVisible = visibleOptionCount === 0;
-
-            this.#noResults.hidden = !noResultsVisible;
-            this.#noResults.ariaHidden = noResultsVisible ? 'false' : 'true';
-        }
+    #applyFilter() {
+        this.#searchProvider.applyFilter(this.#optionList);
 
         if (this.#visible) {
             this.ensureActiveOptionVisible();
@@ -325,40 +266,12 @@ export class OptionListProvider {
     }
 
     resetFilter() {
-        if (this.#searchInput !== null) {
-            this.#searchInput.value = '';
-        }
-
-        this.applyFilter();
-    }
-
-    /**
-     * @param {string} searchOptionKey
-     * @param {string} fallbackValue
-     * @returns {string}
-     */
-    #getLocalizedSearchText(searchOptionKey, fallbackValue) {
-        const textConfig = this.options.search[searchOptionKey];
-
-        if (typeof textConfig === 'string') {
-            return textConfig;
-        }
-
-        if (Object.prototype.toString.call(textConfig) === '[object Object]') {
-            if (typeof textConfig[this.options.i18n.use] === 'string') {
-                return textConfig[this.options.i18n.use];
-            }
-
-            if (typeof textConfig.en === 'string') {
-                return textConfig.en;
-            }
-        }
-
-        return fallbackValue;
+        this.#searchProvider.reset();
+        this.#applyFilter();
     }
 
     #handleSearchInput = () => {
-        this.applyFilter(this.#searchInput.value);
+        this.#applyFilter();
     };
 
     /**
@@ -407,11 +320,13 @@ export class OptionListProvider {
      * @returns {number}
      */
     #getStickySearchOffset() {
-        if (this.#searchInput === null || this.#searchInput.hidden) {
+        const searchInput = this.#searchProvider.searchInput;
+
+        if (searchInput === null || searchInput.hidden) {
             return 0;
         }
 
-        const searchRect = this.#searchInput.getBoundingClientRect();
+        const searchRect = searchInput.getBoundingClientRect();
 
         return Math.max(searchRect.height, 0);
     }
