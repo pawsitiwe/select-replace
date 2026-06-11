@@ -10,7 +10,16 @@ export class KeyboardController {
     #optionListProvider;
 
     /**
-     *
+     * @type {HTMLSpanElement|null}
+     */
+    #searchTabAnchorBefore = null;
+
+    /**
+     * @type {HTMLSpanElement|null}
+     */
+    #searchTabAnchorAfter = null;
+
+    /**
      * @param {object} options
      * @param {HTMLDivElement} fakeSelect
      * @param {object} optionListProvider
@@ -21,34 +30,72 @@ export class KeyboardController {
         this.#fakeSelect = fakeSelect;
         this.#optionListProvider = optionListProvider;
 
-        this.#fakeSelect.addEventListener('click', this.#handleFakeSelectClick);
-        this.options.el.addEventListener('focusin', this.#mirrorFocusState);
-        this.options.el.addEventListener('focusout', this.#removeMirroredFocusState);
+        this.options.el.addEventListener('focusin', this.#onFocusIn);
+        this.options.el.addEventListener('focusout', this.#onFocusOut);
         this.options.el.addEventListener('change', handleRealSelectChange);
+        this.options.el.addEventListener('keydown', this.#onSelectKeydown);
+
+        this.#addSearchTabAnchors();
     }
 
-    #handleFakeSelectClick = () => {
-        window.setTimeout(() => {
-            if (this.#optionListProvider.visible === false || this.#optionListProvider.searchInput === null) {
-                return;
+    #selectKeyHandlers = {
+        Tab: (event) => {
+            const searchInput = this.#optionListProvider.searchInput;
+
+            if (searchInput !== null && this.#optionListProvider.visible) {
+                event.preventDefault();
+                searchInput.focus();
+            }
+        },
+        Escape: () => {
+            this.#removeMirroredFocusState();
+        },
+        Enter: (event) => {
+            event.preventDefault();
+            this.#removeMirroredFocusState();
+        }
+    };
+
+    #searchKeyHandlers = {
+        ArrowDown: (event) => {
+            event.preventDefault();
+            this.#optionListProvider.selectNextVisibleOption();
+        },
+        ArrowUp: (event) => {
+            event.preventDefault();
+            this.#optionListProvider.selectPreviousVisibleOption();
+        },
+        Tab: (event) => {
+            // Move focus to created tab anchor sitting next to the real <select>; So the browser's
+            // native Tab default action then advances from there to the form's next/prev field.
+            if (event.shiftKey) {
+                this.#searchTabAnchorBefore.focus();
+            } else {
+                this.#searchTabAnchorAfter.focus();
             }
 
-            this.#optionListProvider.searchInput.addEventListener('keydown', this.#handleSearchKeydownEvents);
-        }, 0);
+            this.#removeMirroredFocusState();
+        },
+        Escape: (event) => {
+            event.preventDefault();
+            this.#removeMirroredFocusState();
+        },
+        Enter: (event) => {
+            event.preventDefault();
+            this.#searchTabAnchorAfter.focus();
+        }
     };
 
-    #mirrorFocusState = () => {
+    #onFocusIn = () => {
         this.#fakeSelect.classList.add(this.options.classes.focussed);
         this.#optionListProvider.show();
-
-        if (this.#optionListProvider.searchInput !== null) {
-            this.#optionListProvider.searchInput.addEventListener('keydown', this.#handleSearchKeydownEvents);
-        }
-
-        this.options.el.addEventListener('keydown', this.#handleKeydownEvents);
+        this.#addSearchKeydownListener();
     };
 
-    #removeMirroredFocusState = (event = null) => {
+    /**
+     * @param {FocusEvent|null} [event]
+     */
+    #onFocusOut = (event = null) => {
         if (
             event?.relatedTarget instanceof HTMLElement
             && event.relatedTarget.closest(`.${this.options.classes.optionList}`) !== null
@@ -56,123 +103,79 @@ export class KeyboardController {
             return;
         }
 
+        this.#removeMirroredFocusState();
+    };
+
+    /**
+     * @param {KeyboardEvent} event
+     */
+    #onSelectKeydown = (event) => {
+        this.#selectKeyHandlers[event.key]?.(event);
+    };
+
+    /**
+     * @param {KeyboardEvent} event
+     */
+    #onSearchKeydown = (event) => {
+        this.#searchKeyHandlers[event.key]?.(event);
+    };
+
+    /**
+     * @param {FocusEvent} event
+     */
+    #onSearchFocusOut = (event) => {
+        if (
+            event.relatedTarget instanceof HTMLElement
+            && event.relatedTarget.closest(`.${this.options.classes.optionList}`) !== null
+        ) {
+            return;
+        }
+
+        this.#removeMirroredFocusState();
+    };
+
+    #removeMirroredFocusState() {
         this.#fakeSelect.classList.remove(this.options.classes.focussed);
         this.#optionListProvider.resetFilter();
-
-        if (this.#optionListProvider.searchInput !== null) {
-            this.#optionListProvider.searchInput.removeEventListener('keydown', this.#handleSearchKeydownEvents);
-        }
-
         this.#optionListProvider.hide();
-        this.options.el.removeEventListener('keydown', this.#handleKeydownEvents);
-    };
+    }
 
-    /**
-     *
-     * @param {object} event
-     */
-    #handleKeydownEvents = (event) => {
-        switch (event.key) {
-            case 'Tab':
-                if (this.#optionListProvider.searchInput !== null) {
-                    event.preventDefault();
-                    this.#optionListProvider.searchInput.focus();
-                }
+    #addSearchKeydownListener() {
+        const searchInput = this.#optionListProvider.searchInput;
 
-                break;
-            case 'Escape':
-                this.#removeMirroredFocusState();
-                break;
-            case 'Enter':
-                event.preventDefault();
-                this.#removeMirroredFocusState();
-                break;
-        }
-    };
-
-    /**
-     * @param {object} event
-     */
-    #handleSearchKeydownEvents = (event) => {
-        switch (event.key) {
-            case 'ArrowDown':
-                event.preventDefault();
-                this.#optionListProvider.moveSelectionByVisibleOption(1);
-                break;
-            case 'ArrowUp':
-                event.preventDefault();
-                this.#optionListProvider.moveSelectionByVisibleOption(-1);
-                break;
-            case 'Home':
-                event.preventDefault();
-                this.#optionListProvider.selectVisibleBoundaryOption('start');
-                break;
-            case 'End':
-                event.preventDefault();
-                this.#optionListProvider.selectVisibleBoundaryOption('end');
-                break;
-            case 'Tab':
-                event.preventDefault();
-                this.#removeMirroredFocusState();
-                this.#focusRelativeToSelect(event.shiftKey ? -1 : 1);
-                break;
-            case 'Escape':
-                event.preventDefault();
-                this.#removeMirroredFocusState();
-                break;
-            case 'Enter':
-                event.preventDefault();
-                break;
-        }
-    };
-
-    /**
-     * @param {number} focusDirection
-     */
-    #focusRelativeToSelect(focusDirection) {
-        const focusableElements = this.#getFocusableElements();
-        const currentSelectIndex = focusableElements.indexOf(this.options.el);
-
-        if (currentSelectIndex === -1) {
+        if (searchInput === null) {
             return;
         }
 
-        const nextIndex = currentSelectIndex + focusDirection;
-
-        if (nextIndex < 0 || nextIndex >= focusableElements.length) {
-            return;
-        }
-
-        focusableElements[nextIndex].focus();
+        searchInput.addEventListener('keydown', this.#onSearchKeydown);
+        searchInput.addEventListener('focusout', this.#onSearchFocusOut);
     }
 
     /**
-     * @returns {HTMLElement[]}
+     * Inserts invisible focus anchors around the real <select>. So that default
+     * browser tab order can use after focusing the elements.
      */
-    #getFocusableElements() {
-        const focusableSelector = [
-            'a[href]',
-            'button:not([disabled])',
-            'input:not([disabled]):not([type="hidden"])',
-            'select:not([disabled])',
-            'textarea:not([disabled])',
-            '[tabindex]:not([tabindex="-1"])'
-        ].join(', ');
+    #addSearchTabAnchors() {
+        if (this.options.search.enabled !== true) {
+            return;
+        }
 
-        return Array.from(document.querySelectorAll(focusableSelector)).filter((element) => {
-            if (element instanceof HTMLElement === false) {
-                return false;
-            }
+        this.#searchTabAnchorBefore = this.#createSearchTabAnchor();
+        this.#searchTabAnchorAfter = this.#createSearchTabAnchor();
 
-            if (element.hidden || element.closest('[hidden]') !== null) {
-                return false;
-            }
+        this.options.el.before(this.#searchTabAnchorBefore);
+        this.#fakeSelect.after(this.#searchTabAnchorAfter);
+    }
 
-            if (element.getAttribute('aria-hidden') === 'true') {
-                return false;
-            }
+    /**
+     * @returns {HTMLSpanElement}
+     */
+    #createSearchTabAnchor() {
+        const anchor = document.createElement('span');
 
-            return true;
-        });
+        anchor.tabIndex = -1;
+        anchor.setAttribute('aria-hidden', 'true');
+
+        return anchor;
     }
 }

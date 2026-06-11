@@ -10,17 +10,15 @@ export class SearchProvider {
     #noResults = null;
 
     /**
-     * @type {Function}
+     * @type {HTMLDivElement}
      */
-    #onSearchCallback;
+    #optionList = null;
 
     /**
      * @param {object} options
-     * @param {Function} onSearchCallback
      */
-    constructor(options, onSearchCallback) {
+    constructor(options) {
         this.options = options;
-        this.#onSearchCallback = onSearchCallback;
     }
 
     /**
@@ -46,12 +44,14 @@ export class SearchProvider {
 
     /**
      * @param {HTMLDivElement} container
+     * @param {HTMLDivElement} optionList
      */
-    createSearchElements(container) {
+    createSearchElements(container, optionList) {
         if (!this.isEnabled) {
             return;
         }
 
+        this.#optionList = optionList;
         this.#createSearchInput(container);
         this.#createNoResultsElement(container);
     }
@@ -71,10 +71,14 @@ export class SearchProvider {
 
         this.#searchInput.autocomplete = 'off';
         this.#searchInput.spellcheck = false;
-        this.#searchInput.addEventListener('input', this.#handleSearchInput);
+        this.#searchInput.addEventListener('input', this.#onInput);
 
         container.prepend(this.#searchInput);
     }
+
+    #onInput = () => {
+        this.applyFilter();
+    };
 
     /**
      * @param {HTMLDivElement} container
@@ -93,42 +97,30 @@ export class SearchProvider {
     }
 
     /**
-     * @param {HTMLDivElement} optionList
      * @returns {number} - Number of visible options
      */
-    applyFilter(optionList) {
+    applyFilter() {
+        if (this.#optionList === null) {
+            return 0;
+        }
+
         const searchTerm = this.searchTerm;
         let visibleOptionCount = 0;
 
-        optionList.querySelectorAll(':scope > [role="option"]').forEach((optionEl) => {
-            const optionMatchesSearchTerm = optionEl.textContent.toLowerCase().includes(searchTerm);
+        this.#optionList.querySelectorAll('[role="option"]').forEach((optionEl) => {
+            const matches = optionEl.textContent.toLowerCase().includes(searchTerm);
 
-            optionEl.hidden = !optionMatchesSearchTerm;
-            optionEl.ariaHidden = optionMatchesSearchTerm ? 'false' : 'true';
+            this.#setElementVisibility(optionEl, matches);
 
-            if (optionMatchesSearchTerm) {
+            if (matches) {
                 visibleOptionCount += 1;
             }
         });
 
-        optionList.querySelectorAll('[role="group"]').forEach((optgroupEl) => {
-            let groupVisibleCount = 0;
+        this.#optionList.querySelectorAll('[role="group"]').forEach((optgroupEl) => {
+            const hasVisibleOption = optgroupEl.querySelector('[role="option"]:not([hidden])') !== null;
 
-            optgroupEl.querySelectorAll('[role="option"]').forEach((optionEl) => {
-                const optionMatchesSearchTerm = optionEl.textContent.toLowerCase().includes(searchTerm);
-
-                optionEl.hidden = !optionMatchesSearchTerm;
-                optionEl.ariaHidden = optionMatchesSearchTerm ? 'false' : 'true';
-
-                if (optionMatchesSearchTerm) {
-                    groupVisibleCount += 1;
-                    visibleOptionCount += 1;
-                }
-            });
-
-            // Hide optgroup if no options are visible
-            optgroupEl.hidden = groupVisibleCount === 0;
-            optgroupEl.ariaHidden = groupVisibleCount === 0 ? 'true' : 'false';
+            this.#setElementVisibility(optgroupEl, hasVisibleOption);
         });
 
         this.#updateNoResultsVisibility(visibleOptionCount === 0);
@@ -143,6 +135,15 @@ export class SearchProvider {
     }
 
     /**
+     * @param {HTMLElement} el
+     * @param {boolean} visible
+     */
+    #setElementVisibility(el, visible) {
+        el.hidden = !visible;
+        el.ariaHidden = visible ? 'false' : 'true';
+    }
+
+    /**
      * @param {boolean} visible
      */
     #updateNoResultsVisibility(visible) {
@@ -150,8 +151,7 @@ export class SearchProvider {
             return;
         }
 
-        this.#noResults.hidden = !visible;
-        this.#noResults.ariaHidden = visible ? 'false' : 'true';
+        this.#setElementVisibility(this.#noResults, visible);
     }
 
     /**
@@ -178,9 +178,5 @@ export class SearchProvider {
 
         return fallbackValue;
     }
-
-    #handleSearchInput = () => {
-        this.#onSearchCallback();
-    };
 }
 

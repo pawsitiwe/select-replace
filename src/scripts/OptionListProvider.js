@@ -53,7 +53,7 @@ export class OptionListProvider {
         this.#fakeSelect = fakeSelect;
         this.#clickCallback = clickCallback;
         this.#observer = observer;
-        this.#searchProvider = new SearchProvider(options, this.#handleSearchInput);
+        this.#searchProvider = new SearchProvider(options);
     }
 
     /**
@@ -84,111 +84,80 @@ export class OptionListProvider {
         return this.#visible;
     }
 
-    createOptionList() {
+    #createOptionList() {
         this.#optionListContainer = document.createElement('div');
-        this.#optionList = document.createElement('div');
-
-        Object.assign(this.#optionListContainer, {
-            ariaExpanded: 'false'
-        });
         this.#optionListContainer.classList.add(this.options.classes.optionList);
         this.#optionListContainer.style.display = 'none';
+        this.#optionListContainer.ariaExpanded = 'false';
+        this.#optionListContainer.dataset.id = this.options.el.id;
+        this.#optionListContainer.addEventListener('click', this.#clickCallback);
 
+        this.#optionList = document.createElement('div');
         this.#optionList.setAttribute('role', 'listbox');
 
         this.#optionListContainer.append(this.#optionList);
-        this.#searchProvider.createSearchElements(this.#optionListContainer);
+        this.#searchProvider.createSearchElements(this.#optionListContainer, this.#optionList);
 
-        this.#optionListContainer.addEventListener('click', this.#clickCallback);
-        this.#optionListContainer.dataset.id = this.options.el.id;
         this.#optionListCreated = true;
-
         this.options.optionList.appendTo.append(this.#optionListContainer);
     }
 
     syncOptions() {
         this.#optionList.innerHTML = '';
-        let optionIndex = 0;
 
         Array.from(this.options.el.children).forEach((child) => {
             if (child.tagName === 'OPTGROUP') {
-                this.#createOptGroupElement(child, optionIndex);
-
-                optionIndex += child.querySelectorAll('option').length;
+                this.#optionList.append(this.#createOptGroupElement(child));
             } else if (child.tagName === 'OPTION') {
-                const optionEl = this.#createOptionElement(child, optionIndex);
-
-                this.#optionList.append(optionEl);
-
-                optionIndex++;
+                this.#optionList.append(this.#createOptionElement(child));
             }
         });
 
-        this.#applyFilter();
+        this.#searchProvider.applyFilter();
     }
 
     /**
      * @param {HTMLOptGroupElement} optgroup
-     * @param {number} startIndex
+     * @returns {HTMLDivElement}
      */
-    #createOptGroupElement(optgroup, startIndex) {
+    #createOptGroupElement(optgroup) {
         const optgroupEl = document.createElement('div');
 
         optgroupEl.classList.add(this.options.classes.optgroup);
+        optgroupEl.classList.toggle(this.options.classes.disabled, optgroup.disabled);
         optgroupEl.setAttribute('role', 'group');
         optgroupEl.setAttribute('aria-label', optgroup.label);
 
         const labelEl = document.createElement('div');
 
         labelEl.classList.add('label');
+        labelEl.classList.toggle(this.options.classes.disabled, optgroup.disabled);
         labelEl.textContent = optgroup.label;
         labelEl.dataset.optgroupLabel = 'true';
 
-        if (optgroup.disabled) {
-            optgroupEl.classList.add(this.options.classes.disabled);
-            labelEl.classList.add(this.options.classes.disabled);
-        }
-
         optgroupEl.append(labelEl);
 
-        let currentIndex = startIndex;
-
         optgroup.querySelectorAll('option').forEach((option) => {
-            const optionEl = this.#createOptionElement(option, currentIndex, optgroup.disabled);
-
-            optgroupEl.append(optionEl);
-            currentIndex++;
+            optgroupEl.append(this.#createOptionElement(option, optgroup.disabled));
         });
 
-        this.#optionList.append(optgroupEl);
+        return optgroupEl;
     }
 
     /**
      * @param {HTMLOptionElement} option
-     * @param {number} optionIndex
      * @param {boolean} [parentDisabled]
      * @returns {HTMLDivElement}
      */
-    #createOptionElement(option, optionIndex, parentDisabled = false) {
+    #createOptionElement(option, parentDisabled = false) {
         const optionEl = document.createElement('div');
-        let ariaSelected = 'false';
 
-        if (option.selected) {
-            ariaSelected = 'true';
-        }
-
-        Object.assign(optionEl, {
-            textContent: option.text
-        });
+        optionEl.textContent = option.text;
         optionEl.setAttribute('role', 'option');
-        optionEl.setAttribute('aria-selected', ariaSelected);
-
+        optionEl.setAttribute('aria-selected', option.selected ? 'true' : 'false');
         optionEl.dataset.value = option.value;
-        optionEl.dataset.index = String(optionIndex);
-
-        if (option.disabled || parentDisabled) {
-            optionEl.classList.add(this.options.classes.disabled);
-        }
+        optionEl.dataset.index = String(option.index);
+        optionEl.classList.toggle(this.options.classes.disabled, option.disabled || parentDisabled);
 
         return optionEl;
     }
@@ -198,7 +167,7 @@ export class OptionListProvider {
      */
     show(focusSearch = false) {
         if (this.optionListCreated === false) {
-            this.createOptionList();
+            this.#createOptionList();
             this.syncOptions();
             this.#observer.observe(this.options.el, {
                 attributes: true,
@@ -214,82 +183,40 @@ export class OptionListProvider {
 
         document.addEventListener('click', this.#handleOutsideClick);
         window.addEventListener('resize', this.#handleResize);
-        this.ensureActiveOptionVisible('start');
 
         if (focusSearch === true && this.#searchProvider.searchInput !== null) {
             this.#searchProvider.searchInput.focus();
         }
     }
 
-    /**
-     * @param {'nearest'|'start'} [alignment]
-     */
-    ensureActiveOptionVisible(alignment = 'nearest') {
-        if (this.#optionListCreated === false) {
-            return;
-        }
-
-        const activeOption = this.#getSelectedVisibleOption() ?? this.#getFirstVisibleOption();
-
-        if (activeOption === null) {
-            return;
-        }
-
-        this.#scrollOptionIntoView(activeOption, alignment);
-    }
-
-    /**
-     * @param {number} direction
-     * @returns {boolean}
-     */
-    moveSelectionByVisibleOption(direction) {
-        if (this.options.el.multiple || (direction !== 1 && direction !== -1)) {
-            return false;
-        }
-
-        const visibleOptions = this.#getVisibleEnabledOptionElements();
-
-        if (visibleOptions.length === 0) {
-            return false;
-        }
-
-        const selectedOption = this.#getSelectedVisibleOption();
-
-        if (selectedOption === null) {
-            return this.#setSelectedOptionByElement(direction > 0 ? visibleOptions[0] : visibleOptions[visibleOptions.length - 1]);
-        }
-
-        const currentVisibleIndex = visibleOptions.indexOf(selectedOption);
-
-        if (currentVisibleIndex === -1) {
-            return this.#setSelectedOptionByElement(direction > 0 ? visibleOptions[0] : visibleOptions[visibleOptions.length - 1]);
-        }
-
-        const targetIndex = currentVisibleIndex + direction;
-
-        if (targetIndex < 0 || targetIndex >= visibleOptions.length) {
-            return false;
-        }
-
-        return this.#setSelectedOptionByElement(visibleOptions[targetIndex]);
-    }
-
-    /**
-     * @param {'start'|'end'} boundary
-     * @returns {boolean}
-     */
-    selectVisibleBoundaryOption(boundary) {
+    selectNextVisibleOption() {
         if (this.options.el.multiple) {
-            return false;
+            return;
         }
 
         const visibleOptions = this.#getVisibleEnabledOptionElements();
+        const nextOption = visibleOptions[visibleOptions.indexOf(this.#getSelectedVisibleOption()) + 1];
 
-        if (visibleOptions.length === 0) {
-            return false;
+        if (nextOption === undefined) {
+            return;
         }
 
-        return this.#setSelectedOptionByElement(boundary === 'start' ? visibleOptions[0] : visibleOptions[visibleOptions.length - 1]);
+        this.#setSelectedOptionByElement(nextOption);
+    }
+
+    selectPreviousVisibleOption() {
+        if (this.options.el.multiple) {
+            return;
+        }
+
+        const visibleOptions = this.#getVisibleEnabledOptionElements();
+        const currentIndex = visibleOptions.indexOf(this.#getSelectedVisibleOption());
+
+        if (currentIndex <= 0) {
+            return;
+        }
+
+        this.#setSelectedOptionByElement(visibleOptions[currentIndex - 1]);
     }
 
     hide() {
@@ -314,78 +241,23 @@ export class OptionListProvider {
         }
     }
 
-    #applyFilter() {
-        this.#searchProvider.applyFilter(this.#optionList);
-
-        if (this.#visible) {
-            this.ensureActiveOptionVisible();
-        }
-    }
-
     resetFilter() {
         this.#searchProvider.reset();
-        this.#applyFilter();
-    }
-
-    #handleSearchInput = () => {
-        this.#applyFilter();
-    };
-
-    /**
-     * @returns {HTMLDivElement|null}
-     */
-    #getSelectedVisibleOption() {
-        return this.#optionList.querySelector('[role="option"][aria-selected="true"]:not([hidden])');
+        this.#searchProvider.applyFilter();
     }
 
     /**
-     * @returns {HTMLDivElement|null}
+     * @param {HTMLElement} fakeOptionEl
+     * @returns {HTMLOptionElement|null}
      */
-    #getFirstVisibleOption() {
-        return this.#optionList.querySelector('[role="option"]:not([hidden])');
-    }
+    resolveRealOption(fakeOptionEl) {
+        const optionIndex = Number(fakeOptionEl.dataset.index);
 
-    /**
-     * @param {HTMLDivElement} optionEl
-     * @param {'nearest'|'start'} alignment
-     */
-    #scrollOptionIntoView(optionEl, alignment) {
-        const optionListRect = this.#optionListContainer.getBoundingClientRect();
-        const optionRect = optionEl.getBoundingClientRect();
-        const stickySearchOffset = this.#getStickySearchOffset();
-        const visibleTop = optionListRect.top + stickySearchOffset;
-        const visibleBottom = optionListRect.bottom;
-
-        if (alignment === 'start') {
-            this.#optionListContainer.scrollTop += optionRect.top - visibleTop;
-
-            return;
+        if (Number.isNaN(optionIndex)) {
+            return null;
         }
 
-        if (optionRect.top < visibleTop) {
-            this.#optionListContainer.scrollTop += optionRect.top - visibleTop;
-
-            return;
-        }
-
-        if (optionRect.bottom > visibleBottom) {
-            this.#optionListContainer.scrollTop += optionRect.bottom - visibleBottom;
-        }
-    }
-
-    /**
-     * @returns {number}
-     */
-    #getStickySearchOffset() {
-        const searchInput = this.#searchProvider.searchInput;
-
-        if (searchInput === null || searchInput.hidden) {
-            return 0;
-        }
-
-        const searchRect = searchInput.getBoundingClientRect();
-
-        return Math.max(searchRect.height, 0);
+        return this.options.el.querySelectorAll('option')[optionIndex] ?? null;
     }
 
     /**
@@ -398,21 +270,25 @@ export class OptionListProvider {
     }
 
     /**
+     * @returns {HTMLDivElement|null}
+     */
+    #getSelectedVisibleOption() {
+        return this.#optionList.querySelector('[role="option"][aria-selected="true"]:not([hidden])');
+    }
+
+    /**
      * @param {HTMLDivElement} optionEl
-     * @returns {boolean}
      */
     #setSelectedOptionByElement(optionEl) {
-        const optionIndex = Number(optionEl.dataset.index);
-        const realOption = this.options.el.querySelectorAll('option')[optionIndex];
+        const realOption = this.resolveRealOption(optionEl);
 
-        if (Number.isNaN(optionIndex) || typeof realOption === 'undefined' || realOption.disabled) {
-            return false;
+        if (realOption === null || realOption.disabled) {
+            return;
         }
 
-        this.options.el.selectedIndex = optionIndex;
-        this.options.el.dispatchEvent(new Event('change'));
-
-        return true;
+        this.options.el.selectedIndex = realOption.index;
+        this.options.el.dispatchEvent(new Event('change', { bubbles: true }));
+        optionEl.scrollIntoView({ block: 'nearest' });
     }
 
     /**

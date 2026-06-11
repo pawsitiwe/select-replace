@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Form With Different Version of Select Fields</title>
+    <link rel="stylesheet" href="build/demo.css">
+</head>
+<body>
+<div class="wrapper">
+    <form>
+        <div class="form-grid">
+            <div>
+                <label for="text-field">Text Field:</label>
+                <input type="text" id="text-field" name="text-field" />
+            </div>
+            <div>
+                <label for="select-replace">Single Select</label>
+                <select id="select-replace">
+                    <option value="">Please select …</option>
+                    <option value="option-1">Option 1</option>
+                    <option value="option-2">Option 2</option>
+                    <option value="option-3">Option 3</option>
+                    <option value="option-4">Option 4</option>
+                    <option value="option-5">Option 5</option>
+                </select>
+            </div>
+            <div>
+                <label for="select-replace-1">Select with search</label>
+                <select id="select-replace-1" data-search="true">
+                    <option value="">Please select …</option>
+                    <option value="option-1">Option 1</option>
+                    <option value="option-2">Option 2</option>
+                    <option value="option-3">Option 3</option>
+                    <option value="option-4">Option 4</option>
+                    <option value="option-5">Option 5</option>
+                </select>
+            </div>
+            <div>
+                <label for="select-replace-2">Multiple Select</label>
+                <select id="select-replace-2" multiple data-placeholder="Please select …">
+                    <option value="option-1">Option 1</option>
+                    <option value="option-2">Option 2</option>
+                    <option value="option-3">Option 3</option>
+                    <option value="option-4">Option 4</option>
+                    <option value="option-5">Option 5</option>
+                </select>
+            </div>
+            <div>
+                <label for="textarea-field">Textarea Field:</label>
+                <textarea name="textarea-field" id="textarea-field" cols="30" rows="5"></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="module">
+    import { SelectReplace } from './build/demo.js';
+
+    const selectFields = document.querySelectorAll('select');
+
+    selectFields.forEach((selectField) => {
+        const options = {
+            el: selectField
+        };
+
+        if (selectField.dataset.search === 'true') {
+            options.search = {
+                enabled: true
+            };
+        }
+
+        const selectReplace = new SelectReplace(options);
+
+        selectReplace.init();
+    });
+
+    // Direct listener on each <select>.
+    selectFields.forEach((selectField) => {
+        selectField.addEventListener('change', (event) => {
+            console.log(event.currentTarget);
+        });
+    });
+
+    // Delegated listener on the surrounding <form>.
+    document.querySelector('form').addEventListener('change', (event) => {
+        console.log(event.currentTarget);
+    });
+</script>
+
+</body>
+</html>
