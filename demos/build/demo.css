@@ -139,17 +139,17 @@ select.visually-hidden {
   padding-block: 0.3rem;
 }
 .option-list .option-list-empty {
-  color: #666666;
+  color: lightgray;
   padding-inline: 0.8em;
   padding-block: 0.5em;
 }
 .option-list .option-list-group:not(:first-child) {
   margin-block-start: 0.5em;
 }
-.option-list .option-list-group-label {
+.option-list .option-list-group .label {
   font-weight: bold;
   font-size: 0.85em;
-  color: #666666;
+  color: lightgray;
   text-transform: uppercase;
   padding-inline: 0.8em;
   padding-block: 0.4em 0.2em;
@@ -166,7 +166,8 @@ select.visually-hidden {
 .option-list [role=option]:nth-child(even) {
   background-color: #fafafa;
 }
-.option-list [aria-selected=true] {
+.option-list [aria-selected=true],
+.option-list .highlighted {
   font-weight: bold;
 }
 .option-list .disabled {
