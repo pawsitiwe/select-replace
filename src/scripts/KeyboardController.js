@@ -53,6 +53,20 @@ export class KeyboardController {
         Enter: (event) => {
             event.preventDefault();
             this.#removeMirroredFocusState();
+        },
+        ArrowDown: (event) => {
+            if (this.options.el.multiple) {
+                return;
+            }
+            event.preventDefault();
+            this.#stepRealSelection(1);
+        },
+        ArrowUp: (event) => {
+            if (this.options.el.multiple) {
+                return;
+            }
+            event.preventDefault();
+            this.#stepRealSelection(-1);
         }
     };
 
@@ -138,6 +152,34 @@ export class KeyboardController {
         this.#fakeSelect.classList.remove(this.options.classes.focussed);
         this.#optionListProvider.resetFilter();
         this.#optionListProvider.hide();
+    }
+
+    /**
+     * @param {number} direction
+     */
+    #stepRealSelection(direction) {
+        const options = this.options.el.options;
+        let nextIndex = this.options.el.selectedIndex + direction;
+
+        // option.disabled reflects only the option's own attribute — also skip
+        // options whose parent <optgroup> is disabled.
+        while (
+            nextIndex >= 0
+            && nextIndex < options.length
+            && (options[nextIndex].disabled || options[nextIndex].closest('optgroup[disabled]') !== null)
+        ) {
+            nextIndex += direction;
+        }
+
+        if (nextIndex < 0 || nextIndex >= options.length) {
+            return;
+        }
+
+        this.options.el.selectedIndex = nextIndex;
+        this.options.el.dispatchEvent(new Event('change', { bubbles: true }));
+        this.#optionListProvider.optionList
+            ?.querySelector(`[data-index="${nextIndex}"]`)
+            ?.scrollIntoView({ block: 'nearest' });
     }
 
     #addSearchKeydownListener() {
