@@ -100,7 +100,20 @@ export class KeyboardController {
         }
     };
 
-    #onFocusIn = () => {
+    /**
+     * @param {FocusEvent} event
+     */
+    #onFocusIn = (event) => {
+        if (
+            event.relatedTarget !== null
+            && (
+                event.relatedTarget === this.#searchTabAnchorBefore
+                || event.relatedTarget === this.#searchTabAnchorAfter
+            )
+        ) {
+            return;
+        }
+
         this.#fakeSelect.classList.add(this.options.classes.focussed);
         this.#optionListProvider.show();
         this.#addSearchKeydownListener();
