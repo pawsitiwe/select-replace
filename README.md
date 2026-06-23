@@ -130,15 +130,44 @@ not have any parameters yet.
 </details>
 
 
+## Features
+
+### Search
+
+Pass `search: { enabled: true }` to enable a filter input above the option list. The input placeholder 
+and the "no results" text can be customized per language via the `i18n.search` settings.
+
+```js
+new SelectReplace({
+    el: document.querySelector('select'),
+    search: {
+        enabled: true
+    }
+}).init();
+```
+
+Keyboard interaction inside the search input: `ArrowUp` / `ArrowDown` move the highlight, `Enter` confirms
+and tabs out of the dropdown, `Escape` closes it, and `Tab` / `Shift+Tab` advance focus to the next /
+previous form field.
+
+### Optgroups
+
+Native `<optgroup>` is rendered in the fake option list with the group's `label` as a non-interactive
+heading. Groups with the `disabled` attribute (and any options inside them) are rendered as disabled and
+skipped during keyboard navigation. Disabling individual `<option>` elements works the same way.
+
 ## Demos
 
 Checkout this repository and use the [/demos](/demos) folder as document root to see a running demo in the browser.
 
 - [Single select](/demos/single-select.html)
+- [Single select with search](/demos/single-select-with-search.html)
 - [Multiple select](/demos/multiple-select.html)
 - [Multiple select fields](/demos/multiple-select-fields.html)
+- [Optgroup select](/demos/optgroup-select.html)
 - [Preselected options](/demos/preselected-options.html)
 - [Disabled select and options](/demos/disabled-select-and-options.html)
 - [Programmatic control](/demos/programmatic-control.html)
 - [Form reset](/demos/form-reset.html)
 - [Option list appended to custom container](/demos/option-list-appended-to-custom-container.html)
+- [Form with select events](/demos/form-with-select-events.html)
