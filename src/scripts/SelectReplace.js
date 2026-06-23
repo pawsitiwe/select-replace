@@ -172,15 +172,21 @@ export class SelectReplace extends Base {
         this.options.el.classList.add(this.options.classes.hideSelect);
     }
 
-    #handleFakeSelectClick = () => {
+    /**
+     * @param {MouseEvent} event
+     */
+    #handleFakeSelectClick = (event) => {
         if (this.isDisabled) {
             return;
         }
+
+        event.preventDefault();
 
         if (this.#optionListProvider.visible === true) {
             this.#optionListProvider.resetFilter();
             this.#optionListProvider.hide();
         } else {
+            this.options.el.focus();
             this.#optionListProvider.show(true);
         }
     };

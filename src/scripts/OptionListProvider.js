@@ -91,6 +91,7 @@ export class OptionListProvider {
         this.#optionListContainer.ariaExpanded = 'false';
         this.#optionListContainer.dataset.id = this.options.el.id;
         this.#optionListContainer.addEventListener('click', this.#clickCallback);
+        this.#optionListContainer.addEventListener('mousedown', this.#preventFocusLossOnOptionClick);
 
         this.#optionList = document.createElement('div');
         this.#optionList.setAttribute('role', 'listbox');
@@ -324,4 +325,13 @@ export class OptionListProvider {
     #handleResize = ReduceFunctionCalls.throttle(() => {
         this.updatePosition();
     });
+
+    /**
+     * @param {MouseEvent} event
+     */
+    #preventFocusLossOnOptionClick = (event) => {
+        if (event.target.closest('[data-value]') !== null) {
+            event.preventDefault();
+        }
+    };
 }
