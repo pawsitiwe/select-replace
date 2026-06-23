@@ -166,8 +166,7 @@ select.visually-hidden {
 .option-list [role=option]:nth-child(even) {
   background-color: #fafafa;
 }
-.option-list [aria-selected=true],
-.option-list .highlighted {
+.option-list [aria-selected=true] {
   font-weight: bold;
 }
 .option-list .disabled {
