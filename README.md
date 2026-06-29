@@ -135,7 +135,8 @@ not have any parameters yet.
 ### Search
 
 Pass `search: { enabled: true }` to enable a filter input above the option list. The input placeholder 
-and the "no results" text can be customized per language via the `i18n.search` settings.
+and the "no results" text can be customized per language via the `i18n.search` settings. Both single select
+and multiple select fields can be searched.
 
 ```js
 new SelectReplace({
