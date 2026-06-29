@@ -73,11 +73,11 @@ export class KeyboardController {
     #searchKeyHandlers = {
         ArrowDown: (event) => {
             event.preventDefault();
-            this.#optionListProvider.selectNextVisibleOption();
+            this.#optionListProvider.selectNextVisibleOption(event.shiftKey);
         },
         ArrowUp: (event) => {
             event.preventDefault();
-            this.#optionListProvider.selectPreviousVisibleOption();
+            this.#optionListProvider.selectPreviousVisibleOption(event.shiftKey);
         },
         Tab: (event) => {
             // Move focus to created tab anchor sitting next to the real <select>; So the browser's

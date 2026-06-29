@@ -190,34 +190,32 @@ export class OptionListProvider {
         }
     }
 
-    selectNextVisibleOption() {
-        if (this.options.el.multiple) {
-            return;
-        }
-
+    /**
+     * @param {boolean} [extend]
+     */
+    selectNextVisibleOption(extend = false) {
         const visibleOptions = this.#getVisibleEnabledOptionElements();
-        const nextOption = visibleOptions[visibleOptions.indexOf(this.#getSelectedVisibleOption()) + 1];
+        const nextOption = visibleOptions[visibleOptions.indexOf(this.#getLastSelectedVisibleOption()) + 1];
 
         if (nextOption === undefined) {
             return;
         }
 
-        this.#setSelectedOptionByElement(nextOption);
+        this.#setSelectedOptionByElement(nextOption, extend);
     }
 
-    selectPreviousVisibleOption() {
-        if (this.options.el.multiple) {
-            return;
-        }
-
+    /**
+     * @param {boolean} [extend]
+     */
+    selectPreviousVisibleOption(extend = false) {
         const visibleOptions = this.#getVisibleEnabledOptionElements();
-        const currentIndex = visibleOptions.indexOf(this.#getSelectedVisibleOption());
+        const currentIndex = visibleOptions.indexOf(this.#getFirstSelectedVisibleOption());
 
         if (currentIndex <= 0) {
             return;
         }
 
-        this.#setSelectedOptionByElement(visibleOptions[currentIndex - 1]);
+        this.#setSelectedOptionByElement(visibleOptions[currentIndex - 1], extend);
     }
 
     hide() {
@@ -273,21 +271,36 @@ export class OptionListProvider {
     /**
      * @returns {HTMLDivElement|null}
      */
-    #getSelectedVisibleOption() {
+    #getFirstSelectedVisibleOption() {
         return this.#optionList.querySelector('[role="option"][aria-selected="true"]:not([hidden])');
     }
 
     /**
-     * @param {HTMLDivElement} optionEl
+     * @returns {HTMLDivElement|null}
      */
-    #setSelectedOptionByElement(optionEl) {
+    #getLastSelectedVisibleOption() {
+        const selected = this.#optionList.querySelectorAll('[role="option"][aria-selected="true"]:not([hidden])');
+
+        return selected[selected.length - 1] ?? null;
+    }
+
+    /**
+     * @param {HTMLDivElement} optionEl
+     * @param {boolean} [extend]
+     */
+    #setSelectedOptionByElement(optionEl, extend = false) {
         const realOption = this.resolveRealOption(optionEl);
 
         if (realOption === null || realOption.disabled) {
             return;
         }
 
-        this.options.el.selectedIndex = realOption.index;
+        if (this.options.el.multiple && extend) {
+            realOption.selected = true;
+        } else {
+            this.options.el.selectedIndex = realOption.index;
+        }
+
         this.options.el.dispatchEvent(new Event('change', { bubbles: true }));
         optionEl.scrollIntoView({ block: 'nearest' });
     }
