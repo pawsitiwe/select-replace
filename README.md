@@ -89,8 +89,7 @@ new SelectReplace({...}).init();
 | optionList.calcWidth    | boolean     | `true`                                                                                                                                                                                                                                                                                                                                   | Make option list the same width as select field                                     |
 | optionList.appendTo     | HTMLElement | `document.body`                                                                                                                                                                                                                                                                                                                          | Container in which the option list get appended                                     |
 | classes                 | object      | <pre>{<br>&nbsp;&nbsp;fakeSelect: 'select-replace',<br>&nbsp;&nbsp;placeholder: 'placeholder',<br>&nbsp;&nbsp;optionList: 'option-list',<br>&nbsp;&nbsp;searchInput: 'option-list-search',<br>&nbsp;&nbsp;noResults: 'option-list-empty',<br>&nbsp;&nbsp;hideSelect: 'visually-hidden',<br>&nbsp;&nbsp;focussed: 'has-focus',<br>&nbsp;&nbsp;disabled: 'disabled',<br>&nbsp;&nbsp;optgroup: 'option-list-group'<br>}</pre> | Selectors that are used internally or states that will be added to elements         |
-| search                  | object      |                                                                                                                                                                                                                                                                                                                                          | Search configuration for filtering visible options                                   |
-| search.enabled          | boolean     | `false`                                                                                                                                                                                                                                                                                                                                  | Enables a search input above the option list                                         |
+| search                  | boolean     | `false`                                                                                                                                                                                                                                                                                                                                  | Enables a search input above the option list for filtering visible options           |
 | i18n                    | object      |                                                                                                                                                                                                                                                                                                                                          | Internationalization settings                                                       |
 | i18n.languages          | array       | `['en', 'de']`                                                                                                                                                                                                                                                                                                                           | Available translations (extend this array, if you provide more)                     |
 | i18n.selectedOptions    | object      | <pre>{<br>&nbsp;&nbsp;en: 'selected',<br>&nbsp;&nbsp;de: 'ausgewählt'<br>}</pre>                                                                                                                                                                                                                                                         | Translations for n selected                                                         |
@@ -134,16 +133,14 @@ not have any parameters yet.
 
 ### Search
 
-Pass `search: { enabled: true }` to enable a filter input above the option list. The input placeholder 
+Pass `search: true` to enable a filter input above the option list. The input placeholder 
 and the "no results" text can be customized per language via the `i18n.search` settings. Both single select
 and multiple select fields can be searched.
 
 ```js
 new SelectReplace({
     el: document.querySelector('select'),
-    search: {
-        enabled: true
-    }
+    search: true
 }).init();
 ```
 

@@ -64,9 +64,7 @@ export class SelectReplace extends Base {
                 },
                 use: 'en'
             },
-            search: {
-                enabled: false,
-            }
+            search: false
         }, options);
 
         if (this.isMultiple && typeof this.options.el.dataset.placeholder === 'undefined') {

@@ -39,7 +39,7 @@ export class SearchProvider {
      * @returns {boolean}
      */
     get isEnabled() {
-        return this.options.search.enabled === true;
+        return this.options.search === true;
     }
 
     /**

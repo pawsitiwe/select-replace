@@ -211,7 +211,7 @@ export class KeyboardController {
      * browser tab order can use after focusing the elements.
      */
     #addSearchTabAnchors() {
-        if (this.options.search.enabled !== true) {
+        if (this.options.search !== true) {
             return;
         }
 
